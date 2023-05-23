@@ -9,11 +9,17 @@ import { Loader } from "./Loader/Loader";
 import { Button } from "./Button/Button";
 
 let page = 1;
+const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+}
 
-const App = () => {
+export default function App () {
   const [images, setImages] = useState([]);
   const [inputName, setInputName] = useState("");
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState(Status.IDLE);
   const [totalHits, setTotalHits] = useState(0);
 
   const handleSubmit = async (inputName) => {
@@ -22,36 +28,36 @@ const App = () => {
       return toast("Please enter your request");
     } else {
       try {
-        setStatus("pending");
+        setStatus(Status.PENDING);
         const { totalHits, hits } = await fetchImages(inputName, page);
         if (hits.length < 1) {
-          setStatus("idle");
+          setStatus(Status.IDLE);
           return toast("There are no images matching your request.");
         } else {
           setImages(hits);
           setInputName(inputName);
           setTotalHits(totalHits);
-          setStatus("resolved");
+          setStatus(Status.RESOLVED);
         }
       } catch (error) {
-        setStatus("rejected");
+        setStatus(Status.REJECTED);
       }
     }
   };
 
   const onNextPage = async () => {
-    setStatus("pending");
+    setStatus(Status.PENDING);
 
     try {
       const { hits } = await fetchImages(inputName, (page += 1));
       setImages((prevState) => [...prevState, ...hits]);
-      setStatus("resolved");
+      setStatus(Status.RESOLVED);
     } catch (error) {
-      setStatus("rejected");
+      setStatus(Status.REJECTED);
     }
   };
 
-  if (status === "idle") {
+  if (status === Status.IDLE) {
     return (
       <div className={css.App}>
         <Searchbar onSubmit={handleSubmit} />
@@ -59,7 +65,7 @@ const App = () => {
       </div>
     );
   }
-  if (status === "pending") {
+  if (status === Status.PENDING) {
     return (
       <div className={css.App}>
         <Searchbar onSubmit={handleSubmit} />
@@ -69,7 +75,7 @@ const App = () => {
       </div>
     );
   }
-  if (status === "rejected") {
+  if (status === Status.REJECTED) {
     return (
       <div className={css.App}>
         <Searchbar onSubmit={handleSubmit} />
@@ -77,7 +83,7 @@ const App = () => {
       </div>
     );
   }
-  if (status === "resolved") {
+  if (status === Status.RESOLVED) {
     return (
       <div className={css.App}>
         <Searchbar onSubmit={handleSubmit} />
@@ -89,5 +95,3 @@ const App = () => {
     );
   }
 };
-
-export default App;
